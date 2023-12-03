@@ -11,13 +11,6 @@ impl<T> GetInGrid for Vec<Vec<T>> {
     }
 }
 
-#[derive(Debug)]
-struct Digit {
-    index: usize,
-    near_part: bool,
-    digit: char,
-}
-
 // A very much, non-rust approach lmao
 fn find_digit(
     grid: &Vec<Vec<char>>,
@@ -44,14 +37,6 @@ fn find_digit(
     Some(n)
 }
 
-fn get_in_grid(grid: &Vec<Vec<char>>, x: usize, y: usize) -> Option<char> {
-    match grid.get(y)?.get(x)? {
-        '.' => None,
-        c if c.is_numeric() => None, // Numbers are not parts
-        c => Some(*c),
-    }
-}
-
 fn one(content: String) -> u32 {
     let grid: Vec<Vec<char>> = content
         .lines()
@@ -60,45 +45,28 @@ fn one(content: String) -> u32 {
 
     grid.iter()
         .enumerate()
+        // Find all locations with parts
         .map(|(y, row)| {
-            let mut prev_index = None;
-            let mut numbers = vec![(false, String::new())];
-            for digit in
-                row.iter()
-                    .enumerate()
-                    .filter(|(_, c)| c.is_numeric())
-                    .map(|(x, number)| Digit {
-                        index: x,
-                        digit: *number,
-                        near_part: (x.saturating_sub(1)..=x.saturating_add(1)).any(|real_x| {
-                            (y.saturating_sub(1)..=y.saturating_add(1))
-                                .any(|real_y| get_in_grid(&grid, real_x, real_y).is_some())
-                        }),
-                    })
-            {
-                match prev_index {
-                    Some(n) if n + 1 == digit.index => {
-                        let current_number = numbers.last_mut().expect("This is impossible");
-                        current_number.0 = current_number.0 || digit.near_part;
-                        current_number.1.push(digit.digit)
-                    }
-                    None => {
-                        let current_number = numbers.last_mut().expect("This is impossible");
-                        current_number.0 = current_number.0 || digit.near_part;
-                        current_number.1.push(digit.digit)
-                    }
-                    Some(_) => numbers.push((digit.near_part, format!("{}", digit.digit))),
-                }
-                prev_index = Some(digit.index)
-            }
-            numbers
-                .iter()
-                .filter_map(|(near_part, number)| match near_part {
-                    true => number.parse::<u32>().ok(),
-                    false => None,
-                })
-                .sum::<u32>()
+            row.iter()
+                .enumerate()
+                .filter(|(_, char)| **char != '.' && !char.is_numeric())
+                .map(|(x, _)| (x, y))
+                .collect::<Vec<(usize, usize)>>()
         })
+        .flatten()
+        // For each parts, search for surrounding digits
+        .map(|(center_x, center_y)| {
+            let mut ignore_list: Vec<(usize, usize)> = vec![(center_x, center_y)];
+            (center_x.saturating_sub(1)..=center_x.saturating_add(1))
+                .map(|x| {
+                    (center_y.saturating_sub(1)..=center_y.saturating_add(1))
+                        .filter_map(|y| find_digit(&grid, &mut ignore_list, (x, y)))
+                        .collect::<Vec<u32>>()
+                })
+                .flatten()
+                .collect::<Vec<u32>>()
+        })
+        .flatten()
         .sum()
 }
 
@@ -119,7 +87,6 @@ fn two(content: String) -> u32 {
                 .collect::<Vec<(usize, usize)>>()
         })
         .flatten()
-
         // For each gear, search for surrounding digits
         .map(|(center_x, center_y)| {
             let mut ignore_list: Vec<(usize, usize)> = vec![(center_x, center_y)];
