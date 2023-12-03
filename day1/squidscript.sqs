@@ -1,0 +1,71 @@
+
+veemo code from: return io.open("/home/jaschutte/Documents/AoC/2023/day1/input", "r"):read("*a")
+grizzco! code input
+
+woomy input_index 0
+veemo# input input_length
+
+veemo current_line
+woomy current_line_index 0
+
+woomy global_sum 0
+
+oomy input_index < input_length
+
+    woomy input_index + 1
+    veemo input_char <- input [input_index]
+
+    # If not new line, append to the line buffer
+    thisway! input_char ! 10
+        woomy current_line_index + 1
+        veemo input_char -> current_line [current_line_index]
+    ngyes
+
+    # On new line, handle the buffer
+    thisway! input_char = 10
+        woomy sum 0
+
+        oomy 1 = 1
+            veemo current_char <- current_line [current_line_index]
+
+            # Check if the current char is a digit
+            thisway! current_char >= '0
+                thisway! current_char <= '9
+                    woomy sum current_char
+                    woomy sum - '0
+                    thisway@ BACKWARDS_LOOP_SEARCH_END
+                ngyes
+            ngyes
+            woomy current_line_index - 1
+        ngyes
+        help!woomy BACKWARDS_LOOP_SEARCH_END @CURRENT_LINE
+
+        woomy current_line_index 1
+        oomy 1 = 1
+            veemo current_char <- current_line [current_line_index]
+
+            # Check if the current char is a digit
+            thisway! current_char >= '0
+                thisway! current_char <= '9
+                    woomy current_char - '0
+                    woomy current_char * 10
+                    woomy sum + current_char
+                    thisway@ FORWARDS_LOOP_SEARCH_END
+                ngyes
+            ngyes
+            woomy current_line_index + 1
+        ngyes
+        help!woomy FORWARDS_LOOP_SEARCH_END @CURRENT_LINE
+
+        woomy global_sum + sum
+
+        # Reset line
+        veemo current_line
+        woomy current_line_index 0
+    ngyes
+
+ngyes
+
+booyah! global_sum
+booyah? 10
+
