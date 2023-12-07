@@ -100,8 +100,6 @@ fn two(content: String) -> u64 {
             let joker_count = hand.chars().filter(|c| *c == 'J').count() as u8;
             // If we got jokers, add them to the most important one (being the top)
             if joker_count > 0 {
-                dbg!(&cards, joker_count);
-
                 // Make sure to get rid of the joker cards
                 let (index, joker_cards) = cards
                     .iter_mut()
