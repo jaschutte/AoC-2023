@@ -67,6 +67,26 @@ fn one(content: String) -> u64 {
     iteration
 }
 
+#[inline]
+fn lcm(a: u64, b: u64) -> u64 {
+    a * b / gcd(a, b)
+}
+
+// Euclidian GCD
+#[inline]
+fn gcd(a: u64, b: u64) -> u64 {
+    let (mut min, mut max) = (a.min(b), a.max(b));
+    loop {
+        match max % min {
+            0 => break min,
+            mod_result => {
+                max = min;
+                min = mod_result;
+            }
+        }
+    }
+}
+
 fn two(content: String) -> u64 {
     let (steps, nodes) = content.split_once("\n\n").expect("Invalid Input");
 
@@ -143,20 +163,10 @@ fn two(content: String) -> u64 {
         }
     }
 
-    println!(
-        r"
-So, I got no way to really calculate the LCM, so please go to this site and fill in the following numbers:
-https://www.calculatorsoup.com/calculators/math/lcm.php
-
-Numbers:
-{}
-",
-        found.iter().fold(String::new(), |str, num| {
-            format!("{str}{} ", num.expect("IMPOSSIBLE!"))
-        })
-    );
-
-    0
+    // Calculate the LCM of the list, which is just doing LCM(old, LCM(old, LCM(old, ...))) 6 times
+    found.iter().fold(1, |acc, n| {
+        lcm(acc, n.expect("This is literally impossible"))
+    })
 }
 
 fn main() {
